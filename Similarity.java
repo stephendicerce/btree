@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package csc365_hw_2;
+package csc365_hw_2.btree;
 
 /**
  *
@@ -11,16 +11,24 @@ package csc365_hw_2;
  */
 public class Similarity {
 
-    HashMap hashmap = GetData.getHashMap();
+    BTree bTree = GetData.getBTree();
+    String[] valuesString = GetData.getValues();
+    double[] values = new double[valuesString.length];
     String location, month, year, key, returnLocation;
     int indexOfWantedLocation, returnIndex, numberOfStations, firstYear, lastYear;
     double sum, distance, distanceNotSquared, min;
     String[][] locations;
     double[][] summedData = new double[12][29]; //stores the average monthly windspeed for each location 
     double[] distanceArray = new double[30]; // stores the Euclidian distance for each location based on the input location
+    
+    public void valuesConversion() {
+        for(int i = 0, length = valuesString.length; i < length; ++i) {
+            values[i] = Double.parseDouble(valuesString[i]);
+        }
+    }
 
     /**
-     * Method to compare values of locations. This method queries the hashmap
+     * Method to compare values of locations. This method queries the bTree
      * for all of the data to be compared and sorts them by location, and
      * calculates the Euclidian distance using the formula given in class (Ed =
      * (((x1-y1)^2)+((x2-y2)^2)...+ ... + ((xn-yn)^2))^(1/2))
@@ -33,6 +41,8 @@ public class Similarity {
      * @return the name of the city that is most similar to the requested 
      */
     public String getSimilarityMetric(String l, int index, int s, String fy, String ly) {
+        System.out.println("Calculating Similarity...");
+        valuesConversion();
         numberOfStations = s;
         locations = weatherGUI.getLocations();
         indexOfWantedLocation = (index - 1);
@@ -52,7 +62,8 @@ public class Similarity {
                     }
                     year = "" + intYear;
                     key = location + " " + year + " " + month;
-                    sum += (double)hashmap.getEntryValue(key);
+                    
+                    sum += values[bTree.search(key)];
                 }
                 summedData[i][k] = (sum / 10);
                 sum = 0;
@@ -70,7 +81,7 @@ public class Similarity {
                 }
             }
             distanceArray[i] = Math.sqrt(distance);
-            System.out.println("SQRT of Distance: " + distanceArray[i]);
+//            System.out.println("SQRT of Distance: " + distanceArray[i]);
             distance = 0;
 
         }
@@ -83,7 +94,7 @@ public class Similarity {
                 min = distanceArray[i];
                 returnIndex = i;
             }
-            System.out.println("Min: " + min);
+//            System.out.println("Min: " + min);
         }
         
         //sets the return value based on the return index in a readable string

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package csc365_hw_2;
+package csc365_hw_2.btree;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -28,7 +28,9 @@ public class Category implements Serializable{
     public String getName() {
         return name;
     }
-    
+    /*
+    * Transforms the arrayList of keys to an array and returns the array
+    */
     public String[] getKeys() {
         String[] keyArray = keys.toArray(new String[keys.size()]);
         return keyArray;

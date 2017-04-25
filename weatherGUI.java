@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package csc365_hw_2;
+package csc365_hw_2.btree;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.security.sasl.AuthenticationException;
 import org.json.simple.parser.ParseException;
 
@@ -27,6 +29,8 @@ public class weatherGUI extends javax.swing.JFrame {
     String month;
     String year;
     static HashMap hashmap;
+    static BTree bTree;
+    static String[] keys;
 
     /**
      * Creates new form weatherGUI
@@ -63,9 +67,10 @@ public class weatherGUI extends javax.swing.JFrame {
         dateTextfield = new javax.swing.JTextField();
         cityTextField = new javax.swing.JTextField();
         closeButton = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
         clusteringRadioButton = new javax.swing.JRadioButton();
         clusteringTextBox = new javax.swing.JTextField();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        clusterDisplayPanel = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -185,16 +190,27 @@ public class weatherGUI extends javax.swing.JFrame {
 
         clusteringRadioButton.setText("Clustering");
 
+        clusteringTextBox.setEditable(false);
         clusteringTextBox.setBackground(new java.awt.Color(238, 238, 238));
         clusteringTextBox.setBorder(null);
+
+        clusterDisplayPanel.setEditable(false);
+        clusterDisplayPanel.setBackground(new java.awt.Color(238, 238, 238));
+        clusterDisplayPanel.setColumns(20);
+        clusterDisplayPanel.setRows(5);
+        clusterDisplayPanel.setBorder(null);
+        jScrollPane2.setViewportView(clusterDisplayPanel);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane2))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(searchButton)
@@ -222,20 +238,20 @@ public class weatherGUI extends javax.swing.JFrame {
                                     .addComponent(wsRadioButton))))
                         .addGap(18, 18, 18)
                         .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(173, 173, 173)
-                        .addComponent(jLabel1))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(35, 35, 35)
-                        .addComponent(jLabel2))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jScrollPane2)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(173, 173, 173)
+                                .addComponent(jLabel1))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(35, 35, 35)
+                                .addComponent(jLabel2)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(272, 272, 272)
-                .addComponent(clusteringTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(clusteringTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(192, 192, 192))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -270,11 +286,11 @@ public class weatherGUI extends javax.swing.JFrame {
                             .addComponent(searchButton)
                             .addComponent(clearButton)))
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 17, Short.MAX_VALUE)
-                .addComponent(clusteringTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
+                .addComponent(clusteringTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(closeButton)
                 .addContainerGap())
         );
@@ -301,19 +317,61 @@ public class weatherGUI extends javax.swing.JFrame {
 
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
         // TODO add your handling code here:
+        Category category = null;
+        String[] categoryKeys;
+        String[] valuesString = GetData.getValues();
+        double[] values = new double[valuesString.length];
+        bTree = GetData.getBTree();
+        keys = GetData.getKeys();
+        double windSpeed = 0;
+
+        for (int i = 0, length = valuesString.length; i < length; ++i) {
+            values[i] = Double.parseDouble(valuesString[i]);
+        }
+
         if (location != null && month != null && year != null && wsRadioButton.isSelected()) {
             String key = location + " " + year + " " + month;
-            hashmap = GetData.getHashMap();
-            cityTextField.setText("The average wind speed for " + location);
-            dateTextfield.setText("on " + month + " of " + year + " is: " + hashmap.getEntryValue(key).toString() + " knots");
+
+            System.out.println(bTree.search(key));
+            if (bTree.search(key) != -1) {
+                windSpeed = values[bTree.search(key)];
+                cityTextField.setText("The average wind speed for " + location);
+                dateTextfield.setText("on " + month + " of " + year + " is: " + windSpeed + " knots");
+            } else {
+                dateTextfield.setText("Data not found for this location and time");
+            }
         }
         if (location != null && similarRadioButton.isSelected()) {
             Similarity s = new Similarity();
             String city = s.getSimilarityMetric(location, cityList.getSelectedIndex(), i, yearBox.getItemAt(1), yearBox.getItemAt(10));
             similarTextField.setText("The city most similar to " + location + " is " + city);
+            System.out.println("Done.");
+        }
+        if (location != null && month != null && year != null && clusteringRadioButton.isSelected()) {
+            System.out.println("Calculating clusters...");
+            String key = location + " " + year + " " + month;
+
+            Clustering clusters = new Clustering("categories");
+            for (String k : keys) {
+
+                int value = bTree.search(k);
+                if (value != -1) {
+                    clusters.addKey(k, values[value]);
+                }
+            }
+            windSpeed = values[bTree.search(key)];
+            category = Clustering.getCategory("categories", (Clustering.findFittingCategory(windSpeed)));
+
+            categoryKeys = category.getKeys();
+            String printableKeys = "";
+            for (String k : categoryKeys) {
+                System.out.println("Number of keys in Category: " + categoryKeys.length);
+                printableKeys += k + "\n";
+            }
+            clusterDisplayPanel.setText(printableKeys);
+            System.out.println("Done.");
         }
 
-        System.out.println(i);
 
     }//GEN-LAST:event_searchButtonActionPerformed
 
@@ -427,7 +485,7 @@ public class weatherGUI extends javax.swing.JFrame {
         Scanner sc = new Scanner(f);
         i = 0;
         while (sc.hasNextLine()) {
-            System.out.println("i = " + i);
+//            System.out.println("i = " + i);
             String line = sc.nextLine();
 //            System.out.println(line);
             String[] locationLineArray = line.split(" ");
@@ -443,7 +501,7 @@ public class weatherGUI extends javax.swing.JFrame {
 //            }
         }
 
-        GetData.pullDataFromWebsite(locations, i);
+        GetData.pullDataFromWebsite(locations, i + 1);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -451,6 +509,7 @@ public class weatherGUI extends javax.swing.JFrame {
     private javax.swing.JTextField cityTextField;
     private javax.swing.JButton clearButton;
     private javax.swing.JButton closeButton;
+    private javax.swing.JTextArea clusterDisplayPanel;
     private javax.swing.JRadioButton clusteringRadioButton;
     private javax.swing.JTextField clusteringTextBox;
     private javax.swing.JTextField dateTextfield;
